@@ -12,7 +12,7 @@ router.post(
     check("title").notEmpty(),
     check("description").isLength({ min: 5 }),
     check("address").notEmpty(),
-    check("imageUrl").isURL(),
+    check("image").isURL(),
   ],
   createPlace
 );
@@ -21,7 +21,7 @@ router.patch(
   [
     check("title").notEmpty(),
     check("description").isLength({ min: 5 }),
-    check("imageUrl").isURL(),
+    check("image").isURL(),
   ],
   updatePlace
 );

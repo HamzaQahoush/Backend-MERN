@@ -1,9 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
+const  dotenv =require("dotenv");
+const dotnetenv = dotenv.config();
+const mongoose = require("mongoose");
 const placesRoutes = require("./routes/places-routes");
 const userRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
+const PORT = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
 // places routes
@@ -24,4 +28,18 @@ app.use((error, req, res, next) => {
   res.status(error.code || 500);
   res.json({ message: error.message || "An Unknown error occured" });
 });
-app.listen(5000);
+
+const connection = async () => {
+  try {
+    await mongoose.connect(process.env.ConnectionURL);
+    app.listen(PORT, async () => {
+      console.log(`Server started on port ${PORT}`);
+      console.log("MongoDB connected!!");
+    });
+  } catch (error) {
+    console.log(error);
+    console.log(" connection FAILED!!");
+
+  }
+};
+connection();

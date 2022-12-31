@@ -9,7 +9,7 @@ router.post(
   "/signup",
   [
     check("email").isEmail(),
-    check("password").isLength({ min: 8 }),
+    check("password").isLength({ min: 6 }),
     check("name").notEmpty(),
   ],
   userConrollers.signup

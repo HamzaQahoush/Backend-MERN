@@ -12,35 +12,42 @@ const getAllUser = (req, res, next) => {
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
+  let hasUser;
   if (!errors.isEmpty()) {
     const param = errors.errors[0].param;
-    throw new HttpError(
-      `invalid inputs passed for ${param}, please check your input`,
-      422
+    return next(
+      new HttpError(
+        `invalid inputs passed for ${param}, please check your input`,
+        422
+      )
     );
   }
-  const { name, email, password } = req.body;
-
-  const hasUser = await User.findOne({ email: email });
+  const { name, email, password, places } = req.body;
+  try {
+    hasUser = await User.findOne({ email: email });
+  } catch (err) {
+    return next(new HttpError('signing up failed', 500));
+  }
   if (hasUser) {
-    return next(
-      new HttpError('Could Not create user, Email already exist ', 422)
-    );
+    return next(new HttpError('user already exist', 422));
   }
   const addedUser = new User({
     name,
     email,
     password,
+    image:
+      'https://st2.depositphotos.com/1032921/5237/v/450/depositphotos_52374307-stock-illustration-blue-profile-icon.jpg',
+    places,
   });
 
   try {
     await addedUser.save();
   } catch (err) {
-    const error = new HttpError("Creating user failed", 500);
+    const error = new HttpError('Creating user failed', 500);
     console.log(err);
     return next(error);
   }
-  res.status(201).json({ user: addedUser });
+  res.status(201).json({ user: addedUser.toObject({ getters: true }) });
 };
 
 const login = (req, res, next) => {

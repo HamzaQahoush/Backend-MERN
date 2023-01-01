@@ -18,7 +18,7 @@ router.post(
   "/login",
   [
     check("email").isEmail(),
-    check("password").isLength({ min: 8 }),
+    check("password").isLength({ min: 6 }),
   ],
   userConrollers.login
 );

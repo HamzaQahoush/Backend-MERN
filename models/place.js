@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
-mongoose.set('strictQuery', true)
+const mongoose = require('mongoose');
+mongoose.set('strictQuery', true);
 const Schema = mongoose.Schema;
+const moment = require('moment');
 
 const placeScheme = new Schema({
   title: { type: String, required: true },
@@ -11,7 +12,11 @@ const placeScheme = new Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
   },
-  creator: { type: String, required: true },
+  creator: { type: mongoose.Types.ObjectId, required: true, ref: 'User' },
+  createdAt: {
+    type: String,
+    default: moment().format('MMMM Do YYYY, h:mm:ss a'),
+  },
 });
 
-module.exports = mongoose.model("Place", placeScheme);
+module.exports = mongoose.model('Place', placeScheme);

@@ -1,13 +1,19 @@
 const HttpError = require('../models/http-error');
-const uuid = require('uuid');
 const { validationResult } = require('express-validator');
 const User = require('../models/user');
 
-const getAllUser = (req, res, next) => {
-  if (users.length === 0) {
+
+const getAllUser = async (req, res, next) => {
+  let allUsers;
+  try {
+    allUsers = await User.find({}, '-password').exec();
+  } catch (err) {
     return next(new HttpError('Could Not find any user', 404));
   }
-  res.status(200).json({ users: users });
+
+  res
+    .status(200)
+    .json({ users: allUsers.map((u) => u.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
@@ -37,7 +43,8 @@ const signup = async (req, res, next) => {
     password,
     image:
       'https://st2.depositphotos.com/1032921/5237/v/450/depositphotos_52374307-stock-illustration-blue-profile-icon.jpg',
-    places,
+    places: [],
+    
   });
 
   try {
@@ -50,23 +57,33 @@ const signup = async (req, res, next) => {
   res.status(201).json({ user: addedUser.toObject({ getters: true }) });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const param = errors.errors[0].param;
-    throw new HttpError(
-      `invalid inputs passed for ${param}, please check your input`,
-      422
+    return next(
+      new HttpError(
+        `invalid inputs passed for ${param}, please check your input`,
+        422
+      )
     );
   }
   const { password, email } = req.body;
-
-  const user = users.find((u) => u.email === email && u.password === password);
-  if (user) {
-    return res
-      .status(200)
-      .json({ messege: `login  success for ${user.name} :) ` });
+  let user;
+  try {
+    user = await User.findOne({ email: email, password: password });
+  } catch (error) {
+    return next(new HttpError('something wrong , try again later', 500));
   }
-  return next(new HttpError('user not found or wrong email or password', 400));
+
+  if (!user) {
+    return next(
+      new HttpError('user not found or wrong email or password', 400)
+    );
+  }
+
+  return res
+    .status(200)
+    .json({ messege: `login  success for ${user.name} :) ` });
 };
 module.exports = { getAllUser, signup, login };

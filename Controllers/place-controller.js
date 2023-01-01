@@ -69,7 +69,6 @@ const createPlace = async (req, res, next) => {
     location: coordinates,
     description,
     creator,
-    createdAt,
   });
   let user;
   try {
@@ -84,7 +83,7 @@ const createPlace = async (req, res, next) => {
     return next(new HttpError('user not found , please signup', 404));
   }
   try {
-    const sess = (await mongoose.startSession())
+    const sess = await mongoose.startSession();
     sess.startTransaction();
     await createdPlace.save({ session: sess, validateModifiedOnly: true });
     user.places.push(createdPlace);
@@ -133,9 +132,30 @@ const updatePlace = async (req, res, next) => {
 const deletePlace = async (req, res, next) => {
   const placeId = req.params.pid;
   let place;
+  try {
+    place = await Place.findById(placeId).populate('creator');
+  } catch (err) {
+    return next(
+      new HttpError('deleteing Place Failed,Please try again later', 500)
+    );
+  }
+
+  if (!place) {
+    return next(new HttpError('user not found , please signup', 404));
+  }
 
   try {
-    place = await Place.deleteOne({ _id: placeId });
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await Place.deleteOne({
+      id: placeId,
+      session: sess,
+      validateModifiedOnly: true,
+    });
+
+    await place.creator.places.pull(place)
+    await   place.creator.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
     return next(
       new HttpError("something went wrong , Can't delete the place", 500)

@@ -20,7 +20,7 @@ const getPlaceByUser = async (req, res, next) => {
     );
   }
 
-  res.json({ place: userPlaces.map((p) => p.toObject({ getters: true })) });
+  res.json({ places: userPlaces.map((p) => p.toObject({ getters: true })) });
 };
 
 const getPlaceById = async (req, res, next) => {
@@ -55,7 +55,7 @@ const createPlace = async (req, res, next) => {
     );
   }
 
-  const { title, address, image, description, creator } = req.body;
+  const { title, address, description, creator } = req.body;
   let coordinates;
   try {
     coordinates = await getCoordsForAddress(address);
@@ -65,7 +65,6 @@ const createPlace = async (req, res, next) => {
   const createdPlace = new Place({
     title,
     address,
-    image,
     location: coordinates,
     description,
     creator,
@@ -95,7 +94,7 @@ const createPlace = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ place: createdPlace });
+  res.status(201).json({ place: "created" });
 };
 
 const updatePlace = async (req, res, next) => {
@@ -109,12 +108,12 @@ const updatePlace = async (req, res, next) => {
       422
     );
   }
-  const { title, image, description } = req.body;
+  const { title, description } = req.body;
 
   try {
     updatedPlace = await Place.findByIdAndUpdate(
       placeId,
-      { title: title, image: image, description: description },
+      { title: title, description: description },
       {
         new: true,
         runValidators: true,

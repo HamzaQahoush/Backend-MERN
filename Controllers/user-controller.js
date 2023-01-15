@@ -71,7 +71,7 @@ const login = async (req, res, next) => {
   const { password, email } = req.body;
   let user;
   try {
-    user = await User.findOne({ email: email, password: password });
+    user = await User.findOne({ email: email, password: password },'-password');
   } catch (error) {
     return next(new HttpError('something wrong , try again later', 500));
   }
@@ -84,6 +84,6 @@ const login = async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ messege: `login  success for ${user.name} :) ` });
+    .json({ message: `login  success for ${user.name} :) `  , user: user.toObject({getters:true})});
 };
 module.exports = { getAllUser, signup, login };

@@ -1,6 +1,6 @@
-const axios = require("axios");
-const HttpError = require("../models/http-error");
-const API_KEY = "pk.f69608be861430958e22e7f5628d5585";
+const axios = require('axios');
+const HttpError = require('../models/http-error');
+const API_KEY = 'pk.f69608be861430958e22e7f5628d5585';
 
 async function getCoordsForAddress(address) {
   const response = await axios.get(
@@ -8,23 +8,30 @@ async function getCoordsForAddress(address) {
       address
     )}&format=json`
   );
-
-  const data = response.data[0];
-
-  if (!data || data.status === "ZERO_RESULTS") {
-    const error = new HttpError(
-      "Could not find location for the specified address.",
-      422
-    );
-    throw error;
-  }
-
-  const coorLat = data.lat;
-  const coorLon = data.lon;
-  const coordinates = {
-    lat: coorLat,
-    lng: coorLon,
+  let coorLat;
+  let coorLon;
+  let coordinates = {
+    lat: "",
+    lng: "",
   };
+  console.log(response, 'responseeeeeeeeeeeeeeeee');
+  if (!response.data || response.data[0].status === 'ZERO_RESULTS') {
+    coorLat = 20;
+    coorLon = 25;
+     coordinates = {
+      lat: coorLat,
+      lng: coorLon,
+    };
+  } else {
+    const data = response.data[0];
+
+    coorLat = data.lat;
+    coorLon = data.lon;
+     coordinates = {
+      lat: coorLat,
+      lng: coorLon,
+    };
+  }
 
   return coordinates;
 }

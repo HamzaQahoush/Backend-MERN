@@ -1,7 +1,7 @@
 const HttpError = require('../models/http-error');
+
 const { validationResult } = require('express-validator');
 const User = require('../models/user');
-
 
 const getAllUser = async (req, res, next) => {
   let allUsers;
@@ -28,7 +28,15 @@ const signup = async (req, res, next) => {
       )
     );
   }
-  const { name, email, password, places } = req.body;
+
+  const { name, email, password } = req.body;
+  console.log(req.file, 'req.file>>>>>>>>>>>>>>');
+  console.log(req.body, 'req.body>>>>>>>>>>>>>>');
+  if (!req.file) {
+    return next(
+      new HttpError(`invalid inputs passed, please check your input`, 422)
+    );
+  }
   try {
     hasUser = await User.findOne({ email: email });
   } catch (err) {
@@ -41,10 +49,8 @@ const signup = async (req, res, next) => {
     name,
     email,
     password,
-    image:
-      'https://st2.depositphotos.com/1032921/5237/v/450/depositphotos_52374307-stock-illustration-blue-profile-icon.jpg',
+    image: req.file.path,
     places: [],
-    
   });
 
   try {
@@ -71,7 +77,10 @@ const login = async (req, res, next) => {
   const { password, email } = req.body;
   let user;
   try {
-    user = await User.findOne({ email: email, password: password },'-password');
+    user = await User.findOne(
+      { email: email, password: password },
+      '-password'
+    );
   } catch (error) {
     return next(new HttpError('something wrong , try again later', 500));
   }
@@ -84,6 +93,9 @@ const login = async (req, res, next) => {
 
   return res
     .status(200)
-    .json({ message: `login  success for ${user.name} :) `  , user: user.toObject({getters:true})});
+    .json({
+      message: `login  success for ${user.name} :) `,
+      user: user.toObject({ getters: true }),
+    });
 };
 module.exports = { getAllUser, signup, login };

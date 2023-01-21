@@ -2,18 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const dotenv = require('dotenv');
+const fs = require('fs');
 const dotnetenv = dotenv.config();
 const mongoose = require('mongoose');
 const placesRoutes = require('./routes/places-routes');
 const userRoutes = require('./routes/users-routes');
 const HttpError = require('./models/http-error');
 const PORT = process.env.PORT || 8080;
-var cors = require('cors')
+var cors = require('cors');
+var util= require('util');
+var encoder = new util.TextEncoder('utf-8');
 
 app.use(bodyParser.json());
 
-app.use(cors());  
-
+app.use(cors());
 
 // places routes
 app.use('/api/places', placesRoutes);
@@ -26,12 +28,17 @@ app.use((req, res, next) => {
   throw error;
 });
 app.use((error, req, res, next) => {
+  if (req.file) {
+    fs.unlink(req.files.path, (err) => {
+      console.log(err);
+    });
+  }
   // check if  response already sent -> return next and forward the error
 
   if (res.headerSent) {
     return next(error);
   }
-  console.log(error , "error");
+  console.log(error, 'error');
   res.status(error.status || 500);
   res.json({ message: error.message || 'An Unknown error occured' });
 });

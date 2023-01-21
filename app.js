@@ -10,12 +10,26 @@ const userRoutes = require('./routes/users-routes');
 const HttpError = require('./models/http-error');
 const PORT = process.env.PORT || 8080;
 var cors = require('cors');
-var util= require('util');
-var encoder = new util.TextEncoder('utf-8');
-
+const path = require('path');
 app.use(bodyParser.json());
+app.use(cors())
+// app.use((req, res, next) => {
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   res.setHeader(
+//     'Access-Control-Allow-Headers',
+//     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+//   );
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
 
-app.use(cors());
+//   next();
+// });
+app.use(
+  '/home/hamza/Backend-mern/uploads/images',
+  express.static(
+    path.join('uploads', 'images')
+  )
+  
+);
 
 // places routes
 app.use('/api/places', placesRoutes);
@@ -25,7 +39,7 @@ app.use('/api/users', userRoutes);
 // to handle wrong or un-registered routes
 app.use((req, res, next) => {
   const error = new HttpError('Could Not Find this Routes!!', 404);
-  throw error;
+   return next (error);
 });
 app.use((error, req, res, next) => {
   if (req.file) {
